@@ -1,0 +1,89 @@
+; Удалить из строки (1) все гласные буквы и вывести её на экран
+
+ASSUME CS:MYCODE
+ASSUME DS:MYDATA
+ASSUME ES:MYDATA
+MYDATA SEGMENT
+  STR1 DB 'Kozlova Alina', 0
+  STR2 DB '783fwjc8 2000', 0
+  VOWELS DB 'aeiouyAEIOUY', 0
+ENDS
+MYCODE SEGMENT
+ SEARCH_VOWELS PROC 
+    START_LOOP:
+      MOV DI, OFFSET VOWELS
+    FOR_LOOP:
+      MOV AL, DS:[SI]
+      MOV BL, ES:[DI]
+      CMP BL, 0h
+      JZ NOT_FOUND
+      CMP AL, 0h
+      JZ END_LOOP
+      CMP AL, BL
+      JZ FOUND
+      JMP LOOP_CONTINUE
+    NOT_FOUND:
+      INC SI
+      JMP START_LOOP
+    FOUND:
+      MOV CX, SI	;	ZAPOMINAEM INDEX BUKVY NA KOT OSTANOVILIS
+    DELETE:
+      INC SI
+      MOV DL, DS:[SI]
+      MOV DS:[SI-1], DL
+      CMP DL, 0h
+      JNZ DELETE
+      MOV SI, CX
+      JMP START_LOOP
+    LOOP_CONTINUE:
+      INC DI
+      JMP FOR_LOOP
+    END_LOOP:
+      RET
+
+SHOW PROC
+      MOV AX, 0B800h
+      MOV ES, AX
+      MOV DI, 1660
+      MOV SI, OFFSET STR1
+    OUTPUT:
+      MOV AL, DS:[SI]
+      CMP AL, 0h
+      JZ EXIT_SHOW
+      MOV AH, 01110100b
+      MOV ES:[DI], AX
+      INC SI
+      ADD DI, 2h
+      JMP OUTPUT
+    EXIT_SHOW:
+      MOV SI, OFFSET STR1
+      RET
+  ENDP
+
+
+    MYENTRY:
+      MOV AX, MYDATA
+      MOV DS, AX
+      MOV ES, AX
+      MOV SI, OFFSET STR1
+      MOV DI, OFFSET VOWELS
+      CALL SEARCH_VOWELS
+      CALL SHOW
+      MOV AX, 4C00h
+      INT 21h
+  MYCODE ENDS
+END MYENTRY
+
+
+    MYENTRY:
+      MOV AX, MYDATA
+      MOV DS, AX
+      MOV ES, AX
+      MOV SI, OFFSET STR1
+      MOV DI, OFFSET VOWELS
+      CALL SEARCH_VOWELS
+      CALL SHOW
+      MOV AX, 4C00h
+      INT 21h
+  MYCODE ENDS
+END MYENTRY

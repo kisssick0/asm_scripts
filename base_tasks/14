@@ -1,0 +1,60 @@
+; Перевести все символы строки (1) в верхний регистр
+
+ASSUME CS:MYCODE
+ASSUME DS:MYDATA
+ASSUME ES:MYDATA
+MYDATA SEGMENT
+  STR1 DB 'Kozlova Alina', 0
+  STR2 DB '3rbvnd334 2000', 0
+ENDS
+MYCODE SEGMENT
+ CAPITAL_LETTER PROC 
+    FOR_LOOP:
+      MOV AL, DS:[SI]
+      CMP AL, 0h
+      JZ END_FOR_LOOP
+      MOV BL, 01100000b
+      AND BL, AL
+      CMP DL, BL
+      JNZ CAPITAL
+      SUB AL, 00100000b
+      MOV DS:[SI], AL
+      INC SI
+      JMP FOR_LOOP
+    CAPITAL:
+      INC SI
+      JMP FOR_LOOP    
+    END_FOR_LOOP:
+      RET
+
+SHOW PROC
+      MOV AX, 0B800h
+      MOV ES, AX
+      MOV DI, 1660
+      MOV SI, OFFSET STR1
+    OUTPUT:
+      MOV AL, DS:[SI]
+      CMP AL, 0h
+      JZ EXIT_SHOW
+      MOV AH, 00100100b
+      MOV ES:[DI], AX
+      INC SI
+      ADD DI, 2h
+      JMP OUTPUT
+    EXIT_SHOW:
+      MOV SI, OFFSET STR1
+      RET
+  ENDP
+
+    MYENTRY:
+      MOV AX, MYDATA
+      MOV DS, AX
+      MOV ES, AX
+      MOV SI, OFFSET STR1
+      MOV DL, 01100000b
+      CALL CAPITAL_LETTER
+      CALL SHOW
+      MOV AX, 4C00h
+      INT 21h
+  MYCODE ENDS
+END MYENTRY

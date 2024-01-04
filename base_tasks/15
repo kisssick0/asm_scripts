@@ -1,0 +1,62 @@
+; Проверить вхождение строки (2) в строку (1), начиная с символа  номер 3
+
+ASSUME CS:MYCODE
+ASSUME DS:MYDATA
+ASSUME ES:MYDATA
+MYDATA SEGMENT
+  STRING_A DB 'Kozlova Alina', 0
+  STRING_B DB 'lin', 0
+ENDS
+MYCODE SEGMENT
+  SEARCH_SUBSTRING PROC
+    FOR_LOOP:
+      MOV AL, DS:[SI]
+      MOV BL, ES:[DI]
+      CMP AL, 0h
+      JZ NOT_FOUND
+      CMP BL, 0h
+      JZ FOUND
+      CMP AL, BL
+      JZ END_LOOP
+      JMP NOT_FOUND
+    END_LOOP:
+      INC SI
+      INC DI
+      JMP FOR_LOOP
+    NOT_FOUND:
+      MOV SI, OFFSET STRING_A
+      RET
+    FOUND:
+      MOV SI, OFFSET STRING_B
+      RET
+  ENDP
+    SHOW PROC
+      MOV AX, 0B800h
+      MOV ES, AX
+      MOV DI, 1650
+    START_LOOP:
+      MOV AL, DS:[SI]
+      CMP AL, 0h
+      JZ EXIT_SHOW
+      MOV AH, 00100100b
+      MOV ES:[DI], AX
+      INC SI
+      ADD DI, 2h
+      JMP START_LOOP
+    EXIT_SHOW:
+      MOV SI, OFFSET STRING_A
+      RET
+  ENDP
+    MYENTRY:
+      MOV AX, MYDATA
+      MOV DS, AX
+      MOV ES, AX
+      MOV SI, OFFSET STRING_A
+      MOV DI, OFFSET STRING_B
+      ADD SI, 2
+      CALL SEARCH_SUBSTRING
+      CALL SHOW
+      MOV AX, 4C00h
+      INT 21h
+  MYCODE ENDS
+END MYENTRY

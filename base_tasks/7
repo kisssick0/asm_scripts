@@ -1,0 +1,71 @@
+; Вставить строку (2) в центр строки (1) с выводом на экран
+
+ASSUME CS:MYCODE 
+ASSUME DS:MYDATA
+
+MYDATA SEGMENT
+MYSTR1 DB "Kozlova Alina",0
+MYSTR2 DB "48dvj3 2003",0
+MYDATA ENDS
+
+MYCODE SEGMENT
+MYENTRY:
+
+; initialization segment registr
+MOV AX, MYDATA 
+MOV DS, AX      ;DS <---MYDATA
+
+; nastroika na videobufer
+MOV AX, 0B800H
+MOV ES, AX       ;ES <---VIDEOBUFFER
+
+; poleznaya rabota
+MOV BX, 0
+MOV DI, 0
+MOV SI, 1650
+
+lengthstr1:
+INC BX
+CMP DS:[MYSTR1+BX],0
+JNZ lengthstr1
+
+SHR BX, 1        ; delenie popolam
+                 ; BX = 1/2 mystr1
+
+polovinastr1:
+MOV AL, DS:[MYSTR1+DI] ; AL <--- letter
+MOV AH, 0EH            ; AH <--- color
+MOV ES:[SI], AX
+INC DI
+ADD SI, 2
+CMP BX, DI
+JNZ polovinastr1
+
+MOV DI, 0
+
+str2:
+MOV AL, DS:[MYSTR2+DI] ; AL <--- letter
+MOV AH, 01H            ; AH <--- color
+MOV ES:[SI], AX
+INC DI
+ADD SI, 2
+CMP DS:[MYSTR2+DI], 0
+JNZ str2
+
+MOV DI, BX              ; DI = BX = 1/2 mystr1
+
+vtorayapolovinastr1:
+MOV AL, DS:[MYSTR1+DI] ; AL <--- letter
+MOV AH, 0EH            ; AH <--- color
+MOV ES:[SI], AX
+INC DI
+ADD SI, 2
+CMP DS:[MYSTR1+DI], 0
+JNZ vtorayapolovinastr1
+
+;zavershenie programmy
+MOV AX, 4C00H
+INT 21H
+
+MYCODE ENDS
+END MYENTRY

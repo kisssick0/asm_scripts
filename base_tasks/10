@@ -1,0 +1,87 @@
+; Найти и удалить вхождение строки (1) в строку (2). Результат вывести на экран
+
+ASSUME CS:MYCODE
+ASSUME DS:MYDATA
+ASSUME ES:MYDATA
+MYDATA SEGMENT
+  STRING1 DB 'ova Al', 0
+  STRING2 DB 'Kozlova Alin', 0
+ENDS
+MYCODE SEGMENT
+ SEARCH_SUBSTRING PROC 
+    FOR_LOOP:
+      MOV AL, DS:[SI]
+      MOV BL, ES:[DI]
+      CMP AL, 0h
+      JZ NOT_FOUND
+      CMP BL, 0h
+      JZ FOUND
+      CMP AL, BL
+      JZ EQUAL
+      JMP NOT_EQUAL
+    EQUAL:
+      CMP CX, 0h
+      JNZ EQUAL_CONTINUE
+      MOV CX, SI
+    EQUAL_CONTINUE:
+      INC DX
+      INC DI
+      INC SI
+      JMP FOR_LOOP
+    NOT_EQUAL:
+       MOV DX, 0h
+       MOV DI, OFFSET STRING1
+       MOV CX, 0h
+       INC SI
+      JMP FOR_LOOP
+    NOT_FOUND:
+       RET
+    FOUND:
+      MOV SI, CX
+    DELETE:
+      INC SI
+      MOV AL, DS:[SI]
+      MOV DS:[SI-1], AL
+      CMP AL, 0h
+      JNZ DELETE
+      DEC DX
+      CMP DX, 0h
+      JNZ FOUND
+    END_FOUND:
+      RET
+  ENDP
+
+SHOW PROC
+      MOV AX, 0B800h
+      MOV ES, AX
+      MOV DI, 1660
+      MOV SI, OFFSET STRING2
+    START_LOOP:
+      MOV AL, DS:[SI]
+      CMP AL, 0h
+      JZ EXIT_SHOW
+      MOV AH, 01110100b
+      MOV ES:[DI], AX
+      INC SI
+      ADD DI, 2h
+      JMP START_LOOP
+    EXIT_SHOW:
+      MOV SI, OFFSET STRING2
+      RET
+  ENDP
+
+
+    MYENTRY:
+      MOV DX, 0
+      MOV CX, 0
+      MOV AX, MYDATA
+      MOV DS, AX
+      MOV ES, AX
+      MOV SI, OFFSET STRING2
+      MOV DI, OFFSET STRING1
+      CALL SEARCH_SUBSTRING
+      CALL SHOW
+      MOV AX, 4C00h
+      INT 21h
+  MYCODE ENDS
+END MYENTRY

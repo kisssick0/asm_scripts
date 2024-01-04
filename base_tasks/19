@@ -1,0 +1,64 @@
+; Перевести все символы строки (2) в нижний регистр. Результат вывести на экран
+
+ASSUME CS:MYCODE
+ASSUME DS:MYDATA
+ASSUME ES:MYDATA
+MYDATA SEGMENT
+  STR1 DB 'Kozlova Alina Maksimovna', 0
+  STR2 DB '4287GUVhd4 2000', 0
+ENDS
+MYCODE SEGMENT
+ LOWERCASE PROC 
+    FOR_LOOP:
+      MOV AL, DS:[SI]
+      CMP AL, 0h
+      JZ END_FOR_LOOP
+      MOV BL, 11110000b
+      AND BL, AL 
+      CMP DL, BL
+      JZ CAPITAL
+      CMP CL, BL
+      JZ CAPITAL
+      INC SI
+      JMP FOR_LOOP
+    CAPITAL:
+      ADD AL, 00100000b
+      MOV DS:[SI], AL
+      INC SI
+      JMP FOR_LOOP  
+    END_FOR_LOOP:
+      RET
+
+SHOW PROC
+      MOV AX, 0B800h
+      MOV ES, AX
+      MOV DI, 1660
+      MOV SI, OFFSET STR2
+    OUTPUT:
+      MOV AL, DS:[SI]
+      CMP AL, 0h
+      JZ EXIT_SHOW
+      MOV AH, 00100100b
+      MOV ES:[DI], AX
+      INC SI
+      ADD DI, 2h
+      JMP OUTPUT
+    EXIT_SHOW:
+      MOV SI, OFFSET STR2
+      RET
+  ENDP
+
+
+    MYENTRY:
+      MOV AX, MYDATA
+      MOV DS, AX
+      MOV ES, AX
+      MOV SI, OFFSET STR2
+      MOV DL, 01000000b
+      MOV CL, 01010000b
+      CALL LOWERCASE
+      CALL SHOW
+      MOV AX, 4C00h
+      INT 21h
+  MYCODE ENDS
+END MYENTRY
